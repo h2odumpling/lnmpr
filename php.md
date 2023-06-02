@@ -1,3 +1,14 @@
+# php基础
+
+## require|require_once|include|include_once|use
+* include 遇到文件错误产生一个警告但程序继续运行
+* include_once 与include一样，但在代码已经被导入情况下不会继续导入
+* require 遇到文件错误直接停止程序运行
+* require_once 与require一样，但在代码已经被包括情况下不会继续包括
+* use 按命名空间和类名导入
+
+
+
 # Laravel
 
 ## 生命周期
