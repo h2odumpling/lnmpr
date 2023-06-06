@@ -300,5 +300,58 @@ services:
 默认存储系统，保存所有集群数据，可用于备份\
 * kube-controller-manager
 运行管理控制器，处理常规任务的后台线程\
-包括Node（维护节点）、Replication（维护pod）、Endpoints、Service Account和Token的控制器
-* 
+包括Node（维护节点）、Replication（维护pod）、Endpoints、Service Account和Token的控制器\
+* cloud-controller-manager
+云控制器管理器负责与底层云提供商的平台交互\
+包括Node、Route(路由)、Service、Volume控制器\
+* kube-scheduler
+监视新创建没有分配到Node上的Pod，并为Pod选择一个Node\
+* addons
+插件用以实现Pod和Services功能\
+* DNS
+集群DNS，为Kubernetes services提供DNS记录\
+* kube-ui
+用户界面，提供了集群状态的基础信息\
+* 容器资源监控
+提供监控数据的ui浏览\
+* Cluster-level Logging
+日志相关的服务，保存或搜索日志\
+
+### Node
+节点组件，提供k8s的运行时环境，维护Pod\
+* kublet
+节点代理，监视分配给Node的Pod\
+安装Pod所需的Volume\
+下载Pod的Secrets\
+Pod中运行Docker或其他容器\
+定期检查容器健康\
+报告Pod状态并在必要时创建一个镜像\
+报告Node的状态\
+* kube-proxy
+维护网络规则，执行连接转发实现k8s服务抽象\
+* docker
+用于运行容器\
+* RKT
+docker工具的替代方案
+* supervisord
+轻量级监控系统，保证kublet和docker的运行\
+* fluentd
+守护进程，可提供cluster-level-logging\
+
+## k8s Object|k8s 对象
+k8s系统中的持久实体\
+* 容器化应用
+* 应用使用的资源
+* 应用运行的策略
+k8s对象可以通过k8s api来调用，可以通过CLI或自己的程序，但自己的程序现在只有golang客户端库\
+可通过编写yml文件（类似于dockerfile）来创建\
+
+### k8s file
+* apiVersion
+创建k8s对象的k8s api版本\
+* kind
+创建什么样的对象\
+* metadata
+对象的唯一标识数据，包括name、uid、namespace\                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        x
+name：一个对象拥有一个name，在对象被删除后可以通过name建立新对象，可以用于资源引用的url中\
+uids：由k8s生成的唯一性uid，在每次创建对象时生成\
