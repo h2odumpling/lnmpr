@@ -469,12 +469,223 @@ var_dump($res());
 ```
 * array_reverse(array)
 返回数组的倒序数组\
-
-
+* array_values(array)
+返回数组所以的值\
+* array_keys(array)
+返回数组所以的键\
+* array_flip(array)
+数组键值互换\
+* in_array(search,array)
+在数组中检索，返回bool\
+* array_search(array,search)
+在数组中检索，返回键\
+* array_keys_exists
+检索键名是否在数组中，返回bool\
+* current(array)|pos(array)
+返回当前指针对应的元素，超过长度返回false，但有可能数组当前元素就是false\
+* key(array)
+返回当前指针对应的键，超过长度返回null\
+* prev(array)
+指针前移并返回元素\
+* next(array)
+指针向后并返回元素\
+* end(array)
+指针指向最后一位并返回元素\
+* reset(array)
+指针指向第一位并返回元素\
+* each(array)
+返回当前元素键和值构建的数组，指向下个元素\
+* extract(array)
+把键作为变量名，把值分别赋值给键名形成的变量\
+```
+$a = "Original";
+$my_array = array("a" => "Cat","b" => "Dog", "c" => "Horse");
+extract($my_array);
+echo "\$a = $a; \$b = $b; \$c = $c";
+```
+* compact(value1,value2,value3...)
+用给定的变量创建数组\
+* array_slice(array,start,end)
+从数组中取出元素，可通过后续参数配置是否保留键\
+* array_splice(array1,start,end,array2)
+删除array1中的对应部分，并将array2插入对应位置\
+* array_chunk(array,num,true|false)
+按num个分割数组，可配置是否保留键名\
+* array_pad(array,num,value)
+使用value将数组补到一定长度\
+* array_push(array,value1,value2...)
+将多个元素放入数组最后\
+* array_pop(array)
+取出数组第一个元素并删除\
+* array_shift(array)
+取出数组第一个元素并删除，数组键从0开始重写排序\
+* array_unshift(array,value1,value2...)
+将多个元素放入数组最前\
+* array_walk(array,function,arg)
+使用function遍历数组元素，arg可选\
+```
+function(&$value, $key, $arg){    //如果需要通过这个改变元素值，给value加引用传递
+    $value = 'new value';
+}
+```
+* array_map(function, array)
+使用function处理array并返回新数组\
+* array_filter(array, function)
+使用function过滤array，返回新数组\
+* sort(array)
+按值从小到大排序，按0重排键名\
+* rsort(array)
+从大到小排序，按0重排键名\
+* usort(array, function)
+按自定义函数排序，按0重排键名\
+```
+$arr = (4,2,8,6);
+usort($arr, function($a, $b){
+    if($a==$b){
+        return $a;
+    }
+})
+```
+* asort(array)
+按值从小到大排序，不重置键名\
+* arsort(array)
+按值从大到小排序，不重置键名\
+* uasort(array)
+按自定义函数排序，不重置键名\
+* ksort(array)
+按键从小到大排序\
+* krsort(array)
+按键从大到小排序\
+* uksort(array)
+按自定义函数对键进行排序\
+* array_sum(array)
+对所有元素求和\
+* array_diff(arr1, arr2)
+返回数组差集，不比较键\
+* array_diff_assoc(arr1, arr2)
+返回数组差集，比较键和值\
+* array_intersect(arr1, arr2)
+返回数组交集，不比较键\
+* array_intersect_assoc(arr1, arr2)
+返回数组交集，比较键和值\
+* array_merge(arr1, arr2)
+合并数组，字符串键名相同，后面的覆盖前面的，数字键名相同，后面按需累加\
+* +
+合并数组，相同键名只保留后一个\
+* array_merge_recusive(arr1, arr2)
+递归合并，将键相同的合并到一个数组\
+* range(start,end)
+创建包含start~end的数组\
+* array_unique(arr)
+移除数组重复项，保留键名\
+* shuffle(arr)
+打乱数组\
+* array_rand(arr, int)
+随机取出n个数组元素\
 
 ## 字符串函数
-* strlen($str)
-获取字符长度
+* strlen(string)
+获取字符长度\
+* strops(string, search, start)
+搜索search在string第一次出现的位置，从start开始搜索\
+* stiops(string, search, start)
+忽略大小写的strops\
+* strrops(string, search, start)
+搜索search在string最后一次出现的位置，从start开始\
+* submit(string, start, length)
+从start开始提取length长度字符串\
+* strstr(string, search)
+从0开始搜索search，返回从search位置开始到字符串结束的字符串，没有返回false\
+* stistr(string, search)
+忽略大小写的stistr\
+* strrchr(string, search)
+从string搜索最后一次出现的位置并返回search开始到字符串结束的字符串\
+* str_replace(search, replace, string)
+搜索search并用replace替换\
+* str_ireplace(search, replace, string)
+不区分大小写的str_replace\
+* strtr(string, search, replace)|strtr(string, [search1=>replace1...])
+和str_replace一致\
+* substr_replace(string, replace, start, length)
+从start开始将长度length的字符串替换为replace\
+length为0时可以用作插入\
+* strcmp(string1, string2)
+比较字符串，>=<分别返回1、0、-1\
+* strcasecmp(string1, string2)
+不区分大小写的strcmp\
+* strnatcmp(string1, string2)
+按自然排序比较\
+* strnatcasecmp(string1, string2)
+不区分大小写的strnatcmp\
+* str_split(string, length)
+按length分割string，返回数组\
+* explode(search, string, int)
+按search分割string，int可选分割几次，达到int后，后续字符串不分割\
+* trim(string)
+移除字符串左右空格\
+* ltrim(string)
+移除字符串左侧空格\
+* rtrim(string)
+移除字符右侧空格\
+* chunk_split(string, int)
+每int个字符插入一个空格\
+* strtoupper(string)
+字符串转为大写\
+* strtolower(string)
+字符串转为小写\
+* ucfirst(string)
+大写第一个字符\
+* ucwords(string)
+大写最后一个字符\
+
+## 回调函数
+* call_user_func
+通过间接方式调用函数的方法\
+```
+$a = call_user_func(function($arg){
+    return "ss";
+}, $arg1)
+
+
+function test($a){
+    return "ss";
+}
+$a = call_user_func("test", $arg1);
+
+class Test{
+    public function method($arg){
+        return "ss";
+    }
+    public static function sm($arg){
+        return "ss"
+    }
+}
+
+$t = new Test();
+$a = call_user_func([$t,'method'], $arg);
+$a = call_user_func(["Test","sm"], $arg);
+```
+* call_user_func_array
+与call_user_func类似，唯一区别只有参数需要用数组\
+```
+class Test{
+    public function method($arg){
+        return "ss";
+    }
+    public static function sm($arg){
+        return "ss"
+    }
+}
+
+$t = new Test();
+$a = call_user_func_array([$t,'method'], [$arg]);
+$a = call_user_func_arrry(["Test","sm"], [$arg]);
+```
+
+
+## '|"
+单引号效率更高\
+从Opcodes编译而言，双引号会将变量存储在临时变量中，然后将字符串写入，再用变量替换字符串，而单引号没有这个过程，因此单引号效率更高\
 
 
 
@@ -503,6 +714,8 @@ var_dump($res());
 使用array_reduce返回中间件执行的嵌套闭包\
 由于array_reduce返回的闭包的最外层是传入array的最后一个元素，而最外层闭包又是最先执行的，因此先通过array_reverse将中间件数组倒序，以获得正序执行的嵌套闭包\
 
+## 渲染引擎
+blade模板引擎\
 
 
 # 依赖注入
