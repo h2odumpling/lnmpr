@@ -682,11 +682,164 @@ $a = call_user_func_array([$t,'method'], [$arg]);
 $a = call_user_func_arrry(["Test","sm"], [$arg]);
 ```
 
-
 ## '|"
 单引号效率更高\
 从Opcodes编译而言，双引号会将变量存储在临时变量中，然后将字符串写入，再用变量替换字符串，而单引号没有这个过程，因此单引号效率更高\
 
+## 魔术方法
+* __construct()
+构造函数，类实例化时就会调用\
+* __destruct()
+析构函数，在实例被销毁时调用\
+* __clone()
+在实例被clone时调用\
+```
+$a = new Test();
+clone($a);
+```
+* __toString()
+当对象被当成字符串使用时自动调用\
+与C#不同的是php基类没有实现toString\
+* __invoke()
+当对象被当成函数使用时自动调用\
+```
+class Test(){
+    public function __invoke(){
+        echo "我被当成函数使用了";
+    }
+}
+
+$a = new Test();
+$a();
+```
+* __call(string functionName, array args)
+在实例上调用不存在的方法时调用\
+* __callStatic(string functionName, array args)
+在类上调用不存在静态方法时调用\
+* __get(string fieldName)
+访问对象protect或private字段时自动调用\
+类似C#的属性的get，但针对所有目标字段\
+```
+class Test{
+    private $name;
+    private $age;
+
+    public function __construct(string $name, int $age){
+        $this->name = $name;
+        $this->age = $age;
+    }
+
+    public function __get(string $fieldName){
+        if($fieldName == 'age'){
+            return $this->age - 10;
+        }else{
+            return $this->$fieldName;
+        }
+    }
+}
+
+$a = new Test('zz', 50);
+echo $a->age;   //40    这里实际直接调用__get方法，因此可以获得私有变量
+echo $a->name;  //zz
+```
+* __set(string fieldName, value)
+设置对象protect或private字段时自动调用\
+类似C#属性的set，但针对所有目标字段\
+* __isset(string fieldName)
+对对象protect或private字段使用isset或empty时自动调用\
+* __unset(string fieldName)
+对对象protect或private字段使用unset时自动调用\
+* __sleep()
+对对象进行序列化时自动调用，在序列化前执行，返回需要序列化的字段名称的数组\
+类似于C#实现ISerializabe接口的GetObjectData方法\
+```
+class Test(){
+    public $name;
+    public $age;
+    public $time;
+    public function __sleep(){
+        $this->name = "zz";
+        $this->age = 10;
+        return ["name", "age"];     //执行序列化时只序列化name和age
+    }
+}
+```
+* __weakup()
+当执行反序列化为对象时会调用\
+类似C#反序列化时的特殊构造器或应用了OnDeserialiedAttribute特性的方法\
+* __autoload()
+尝试加载未定义的类\
+定义__autoload后，如果php执行过程中发现未定义的类，就会自动执行__autoload尝试加载\
+```
+function  __autoload($className) {
+    $filePath = "project/class/{$className}.php";
+    if (is_readable($filePath)) {
+        require($filePath);
+    }  
+}  
+
+if (条件A) {
+    $a = new A();
+    $b = new B();
+    $c = new C();
+} else if (条件B) {
+    $a = new A();
+    $b = new B();
+}
+```
+* __debugInfo()
+当对对象执行var_dump时自动调用\
+* __set_state(array fields)
+当对对象使用var_export方法时自动调用，返回一个类的实例\
+```
+class Test(){
+    public $name;
+
+    public function __set_state($fields){
+        $this->name = "zz";
+        return $this;
+    }
+}
+```
+
+## 魔术常量
+* __LINE__
+返回所在行数\
+* __FILE__
+返回当前文件的绝对路径\
+```
+c:\www\1.php
+```
+* __DIR__
+返回当前目录的绝对路径\
+```
+c:\www
+```
+* __FUNCTION__
+返回函数名或空字符串\
+```
+getList
+```
+* __NAMESPACE__
+返回命名空间\
+```
+app\controller
+```
+* __CLASS__
+返回类名包含命名空间\
+```
+app\controller\IndexController
+```
+* __METHOD__
+返回方法名包含类和命名空间\
+```
+app\controller\IndexController::index
+```
+* __TRAIT__
+返回trait名包含命名空间\
+```
+app\trait\MyTrait
+```
 
 
 # Laravel
@@ -716,6 +869,7 @@ $a = call_user_func_arrry(["Test","sm"], [$arg]);
 
 ## 渲染引擎
 blade模板引擎\
+
 
 
 # 依赖注入
@@ -826,3 +980,66 @@ $proxy = $client->useService();
 $result = $proxy->hello('world');
 print($result);
 ```
+
+
+
+# 接口鉴权与JWT
+
+## 验证
+验证就是核实用户身份，就是登录的过程\
+
+## 受权
+基于的状态给用户一些权力，一般通过cookie、session、token、OAuth\
+
+## cookie
+存储在客户端的数据，方便客户端存储一些数据以便再下次请求时提交\
+cookie存储的内容不能超过4k，但可以长久储存\
+
+## session
+存储在服务端的数据，用于指向对应的用户\
+session存储的内容无大小限制，但一般只能短时间内存储\
+缺点：分布式系统的seesion共享\
+
+## token
+登录后获取token，一般由用户id、时间戳等加盐加密而得，客户端凭token进行接口鉴权，服务器端根据token从redis等缓存或数据库中获取信息\
+缺点：服务端需要存储token，每次访问redis也是开销\
+缺点：服务器可能还需要读取数据库以补全token未包含的信息\
+
+## JWT
+是token的一种延申或优化，相当于同时传输了token及相关信息\
+一般客户端从认证服务器登录，获取JWT后，请求应用服务器使用，实现了单点登录\
+
+### JWT构成情况
+xxx.yyy.zzz格式\
+* Header
+一般包含alg加密算法和typ令牌类型两部分，然后将这个json用base64转换为字符串\
+```
+{
+    "alg":"HS256",
+    "typ":"JWT"
+}
+```
+* Payload
+载体部分，默认有包括iss(发行人)、sub(主题)、aud(用户)、exp(过期时间)、nbf(生效时间)、iat(签发时间)、jti(JWTid)，也可以存储自定义字段，比如ip、机器码等，将这个json用base64转为字符串保存\
+```
+{
+    "sub":"我就是GUNDAM",
+    "aud":1,
+    //自定义字段
+    "ip":"192.168.0.1"
+}
+```
+* Signature
+将header和payload字符串加上secret用header中的加密方式进行加盐加密\
+应用服务器一般通过前两段数据经过同一个算法计算是否可以得出相同的签名\
+
+### JWT优缺点
+* 优点
+json通用性高\
+payload中可以保存一些信息，减少数据库查询次数\
+服务器不用保存信息\
+* 缺点
+JWT签发后无法改变JWT的权限，签发后在有效期内始终保持有效状态\
+JWT续签只能签发新的JWT\
+* 缺点解决方案
+引入Redis进行JWT控制\
