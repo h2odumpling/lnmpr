@@ -1,7 +1,19 @@
+# innodb|myisam 区别
+* 都是使用B+树结构，但myisam是非聚簇索引，主键只记录了数据的引用，innodb则是和主键记录在一起
+* innodb支持外键，myisam不支持
+* innodb支持事务，每条sql都是包装成事务执行，myisam不支持事务
+* innodb必须要有主键，myisam可以没有
+* innodb的辅助索引和主键索引是层级关系，即辅助索引只能查询主键，而myisam是平级关系，辅助索引可以直接查到数据
+* innodb不保存具体行数，select count(*) from tableName 会扫描全表，myisam则是保存了一个变量存储，执行很快
+* innodb5.7前没有全文索引，myisam一直有
+* innodb有表锁行锁，myisam只有表锁
+
+
+
 # 聚簇索引和非聚簇索引
 
 ## 聚簇索引
-记录数据结构构成的主要索引\
+记录数据结构构成的主要索引，且数据记录在叶节点上和主键绑定\
 指按B+树的索引，大部分情况就是id\
 
 ## 非聚簇索引
@@ -246,6 +258,23 @@ confirm时直接扣减冻结金额，cancel时将冻结金额重新加到账户�
 
 # 索引优化（非聚簇索引优化）
 
+## 索引数据结构
+* B+树
+* R树
+一般用于空间上的查找\
+* HASH索引
+* 倒序索引
+用于全文索引，一般使用哈希加链表或树形词典的数据结构\
+根据分词算法将记录进行分词，然后用数据结构保存起来\
+
+## 索引种类类型
+* 主键索引
+* 普通索引
+* 联合索引
+* 唯一索引
+* 全文索引
+* 前缀索引
+
 ## 前缀索引
 ```
 table table_name add index index_name(field_name(index_length));
@@ -257,6 +286,105 @@ table table_name add index index_name(field_name(index_length));
 缺点：\
 orderBy无法使用前缀索引\
 前缀索引无法进行索引覆盖\
+
+## 全文索引
+PS：本篇特指mysql的全文索引，其他全文索引算法请见 C#/Learn Journey - algorithm \
+主要通过倒排索引实现，倒排索引主要存储了单词与单词在一个或多个文档间的映射，mysql采用full inverted index，能通过单词找到文档，并从文档找到对应的位置\
+
+### 建立全文索引
+只能建立在char、varchar、text上\
+```
+ALTER TABLE article ADD FULLTEXT INDEX fulltext_article(title,content);
+```
+
+### 全文索引的搜索条件
+* 最小搜索长度|最大搜索长度
+全文索引只能搜索在这个区间范围内的\
+默认情况下innodb是3-84，myisam是4-84，可以进行配置\
+* 全文索引必须和定义时所用的字段一致，fulltext_article(title,content)，搜索时必须是match(title,content)，如果要使用全文索引分别搜索title和content，就需要在两个字段分别建立全文索引\
+
+```
+select * from article match(title,content) against('search');
+```
+
+### 内置中文全文索引
+mysql内置索引器可以通过设置ngram_token_size配置匹配值，范围为2-10，实际这个匹配值就是n元分词法，如果设为2就不能进行单个字的搜索\
+ps:其他分词法，比较主流的是mmseg分词\
+
+### 自定义中文全文索引
+自定义中文全文索引一般使用二元分词法或其他方法方法进行分词操作\
+再将分词操作的词转换为汉字区位码或其他形式以转换为符合mysql英文全文索引的字符串\
+
+### 全文模式的相关性
+相关性的高低代表搜索结果排序的高低\
+相关性和词汇辨识度成反比，词汇辨识度是词汇在索引中的出现次数\
+相关性和词汇出现次数成正比，即单条结果中词汇的出现次数越多，相关性越高\
+
+### 全文索引模式
+
+#### NATURAL LANGUAGE MODE
+自然索引的模式\
+mysql 默认的全文索引模式\
+以相等的形式进行搜索\
+```
+//以下三条是等价的
+select * from article match(content) against("武汉 雨伞");
+select * from article match(content) against("武汉 雨伞" in NATURE LANGUAGE MODE);
+select * from article match(content) against("武汉 雨伞" in BOOLEAN MODE);
+```
+
+#### BOOLEAN MODE
+布尔模式\
+布尔模式下可以对搜索条件进行修改\
+* +:必须出现\
+* -:不能出现\
+* 无或>:增加相关性\
+```
+//同时有武汉雨伞的相关性最高会排在最前
+//只出现武汉或雨伞的会排在第二位
+select * from article match(content) against("武汉 雨伞" in BOOLEAN MODE);
+```
+* <:减少或增加相关性
+```
+//只出现武汉的相关性最高，会排在最前
+//同时出现武汉和雨伞的相关性会降低，排在第二位
+//只出现雨伞的相关性最低，排在第三位
+select * from article match(content) against("武汉 <雨伞" in BOOLEAN MODE);
+```
+@distance_int:必须满足一定的编辑距离
+* ~:负相关性
+```
+//只出现武汉的相关性最高，会排在最前
+//同时出现武汉和雨伞的相关性会降低，排在第二位
+//只出现雨伞的不会会匹配到
+select * from article match(content) against("武汉 ~雨伞" in BOOLEAN MODE);
+```
+* *:通配符
+mysql针对英文的全文匹配默认的单词匹配是等值匹配\
+*可以提供通配性查询\
+```
+//可以匹配agent
+select * from article match(content) against("age*" in BOOLEAM MODE);
+//只能匹配age
+select * from article match(content) against("age" in BOOLEAM MODE);
+```
+* "":短语
+双引号内内容以短语形式进行检索\
+```
+//只能匹配武汉雨伞
+select * from article match(content) against('"武汉雨伞"' in BOOLEAN MODE);
+```
+
+#### QUERY EXPANSION
+拓展搜索模式\
+把查询结果当查询条件再进行一次查询\
+```
+select * from article match(content) against("武汉" in QUERY EXPANSION);
+
+//若搜索结果为"武汉市是好地方" 则等价于以下
+select * from article match(content) against("武汉市是好地方");
+```
+
 
 ## 覆盖索引
 查询字段完全在索引范围中，避免通过索引查询到主键id，再通过主键id查询数据的回表操作\
@@ -316,14 +444,17 @@ mysql优化器会评估走索引的效率和全表扫描的效率，当全表扫
 一般是由于需要扫描的数据量在总表数据量中占比较大\
 
 ## 唯一索引与普通索引
-唯一索引的优点：
+唯一索引的优点：\
 查询比普通索引稍快，在查询到数据后立刻返回，普通索引会查询下一条直到值不一样\
 数据唯一\
-唯一索引的缺点：
+唯一索引的缺点：\
 每次更新或插入都需要验证唯一性，无法使用change buffer，而普通索引的字段在更新操作时会先将更新操作存入change buffer中\
 * change buffer
 非唯一的字段在更新时会先将更新操作存入change buffer中，当表数据需要读取时再执行change buffer里的操作，避免高频率从磁盘读取数据，减少了磁盘io，因此存入数据后到读取数据的时间间隔越长，越能从这个机制中获利\
 缺点：当数据存入后立即需要读取的情况，change buffer反而是额外的开销\
+
+## in|not in
+in会走索引，not in不走索引\
 
 
 
@@ -389,8 +520,7 @@ A rightjoin B where A.id = null\
 会查出AB中都存在的数据\
 
 ## union、union all、or
-* 对同表单字段查询
-union效率高于or，原因是union可以命中索引，or有时会导致索引无效\
+* union、or对比
 ```
 select name,population,area from World where area>=3000000
 union
@@ -399,5 +529,103 @@ select name,population,area from World where population>=25000000;
 ```
 select name,population,area from World where area>=3000000 or population>=25000000;
 ```
+or命中索引的本质是使用union命中了索引\
+在两字段都建立索引的情况下，or和union效率一致\
+在单字段建立索引或没有字段建立索引的情况下，or效率高于union，因为or只需要执行一次全表搜索就能得到结果\
 * union、union all 对比
 union会在数据合并后去重，union all跳过去重步骤\
+
+## and or 优先级
+and高于or，在没有括号的情况下，and先执行\
+
+
+
+### 外置应用索引
+相当于用其他应用对mysql建立额外的索引\
+优势：\
+* 实现mysql无法实现的复杂索引需求，比如对分库分表后的mysql库进行非分库依据字段的全库检索
+* 依赖高速内存，避免较慢的磁盘io
+* 优化存储模式
+
+## es
+java内核\
+
+### es|mysql的区别
+* es使用document格式储存，无需标明字段，mysql需要
+* es是分布式架构，mysql不是
+* es是非实时的，mysql是实时的
+* 数据存储性能，mysql由于索引原因，在数据库量过大时性能会衰退，es只需要足量内存
+* 查询性能，es默认每个输入字段都是有索引的，因此各字段组合查询性能很好，复杂的关联查询或精确检索或覆盖索引的情况下mysql性能好
+
+es在部分情况下优于mysql的原因\
+* 全文搜索，大幅度减少IO\
+* 通过分片降低检索规模，提升并行率\
+
+### es|sphinx 对比
+* es导入数据生成索引的速度慢于sphinx
+* es支持增量更新，sphinx不支持，而是提供了一个辅助表的解决模式，但会增加复杂度
+* es可视化辅助工具Kibana(可视化通过数据生成索引)、Beats(日志收集工具)、Logstash(日志处理工具)，sphinx可视化辅助工具sphinx tools只能监控性能
+* 算法方面没有太大差异
+* es在查询方面支持QueryDSL(通过一个特定格式的json请求体进行查询的方式)
+* es在排序方面的Function Score Query也比sphinx的更方便实现
+* es更简单的实现分布式集群化，sphinx则更为复杂
+* es资源占用多于sphinx，因为java在这部分劣于c++的关系
+
+## sphinx
+c++内核\
+全文搜索引擎\
+
+### 使用场景
+* 快速高效的核心全文索引
+* 并行产生结果集
+在单次数据扫描中可以并行执行多个搜索返回多个结果集\
+* 向上、向外扩展
+向上扩展：增加cpu/内核，扩展磁盘\
+向外扩展：分布式sphinx
+* 聚合分片数据
+将多个mysql库的数据进行聚合，建立外置索引\
+
+### 工作流程
+从mysql读取数据\
+依据数据建立索引\
+搜索数据返回结果\
+根据结果从mysql进行数据读取\
+
+### 配置
+* 数据源配置
+```
+source source_name      #数据源名称
+{
+    type                    = mysql     #数据源类型
+
+    sql_host                = 127.0.0.1
+    sql_user                = root
+    sql_pass                = root
+    sql_db                  = test
+    sql_port                = 3306    #默认为3306
+
+    sql_query_pre           = SET NAMES utf8    #查询获取数据源时的编码
+    sql_query       　　　　 = SELECT id, name, add_time FROM tbl_test    #查询获取数据源时的语句
+
+    sql_attr_timestamp      = add_time    #sql_attr_* 索引属性，返回的搜索结果
+
+    sql_query_info_pre      = SET NAMES utf8    #根据结果查询数据库结果时的编码
+    sql_query_info          = SELECT * FROM tbl_test WHERE id=$id   #根据结果查询数据库结果时的语句
+}
+```
+* 索引配置
+```
+index index_name    #索引名称
+{
+    source                    = test    #数据源名称
+    path                      = /usr/local/coreseek/var/data/test   #索引文件的基本名，生成索引文件会是test1.spa...
+    docinfo                   = extern  #索引文档属性值的存储格式
+    charset_dictpath          = /usr/local/mmseg3/etc/  #中文分词时的词典目录
+    charset_type              = zh_cn.utf-8    #数据编码类型
+    ngram_len                 = 1   #分词长度 n元
+    ngram_chars               = U+3000..U+2FA1F    #进行n元分词模式时的有效字符集
+}
+```
+
+### Coreseek
+在sphinx基础上开发，支持中文mmseg算法\

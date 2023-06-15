@@ -104,14 +104,22 @@ ONBUILD ADD . /app/src
 * STOPSIGNAL
 设置容器的退出信号\
 
-### docker build
+## docker 常用命令
+* docker build
 使用某目录的dockerfile构建镜像\
 ```
 # docker build -t <image_name>:<version> <path>
 docker build -t test:1.0.0 .    //.表示当前目录
 ```
-* -t 指定镜像名称
-* -f 指定dockerfile文件，不指定则默认使用指定目录下的名为Dockerfile的文件构筑镜像
+-t 指定镜像名称\
+-f 指定dockerfile文件，不指定则默认使用指定目录下的名为Dockerfile的文件构筑镜像\
+
+* attach
+连接到当前运行的容器，查看输出内容，常用于调试\
+
+* exec
+进入容器，在容器内运行新的命令或脚本\
+
 
 ## docker-compose
 是一个命令行工具，可以定义和运行多容器docker应用程序\
