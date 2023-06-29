@@ -86,6 +86,10 @@ cat url.text | xargs weget -c
 创建链接文件\
 * head|tail
 显示文件的头或尾\
+* sed
+流编辑器，可以对文件进行修改操作\
+
+
 
 ## vi|vim 文件编辑
 有命令、编辑、底行三种模式，默认进入命令模式，在命令模式中i可以进入插入模式、:可以进入底行模式，插入模式和底行模式只能Esc回到命令模式\
@@ -238,3 +242,20 @@ firewall -cmd --cmdName\
 切换用户\
 * sudo cmd
 暂时拥有root权力执行命令\
+
+
+
+# 常见问题
+
+# sh文件无法打开
+在windows中编辑的sh文件，在linux中无法打开\
+```
+# 报错信息
+# /bin/bash^M: bad interpreter: No such file or directory
+```
+原因是在windows编辑完后换行符自动为\r，而linux中为空\
+解决方法\
+```
+# 将\r结尾的字符替换为空，即可在linux中运行
+sed -i 's/\r$//' /opt/start.sh
+```
