@@ -846,6 +846,13 @@ app\trait\MyTrait
 ```
 
 
+
+# composer
+* --ignore-platform-reqs
+忽略php版本匹配进行包安装，对某些写明php版本但实际在范围外仍可使用的包可以使用这个进行安装
+
+
+
 # Laravel
 
 ## 生命周期
