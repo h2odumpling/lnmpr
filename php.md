@@ -35,13 +35,13 @@ JIT通过增加名为DynASM的库，将特定格式的CPU指令映射为各种�
 * 匿名函数\
 实际是Closure类的一个实例\
 在php中闭包和匿名函数一样，都是Closure类的实例\
-```
+```php
 $func = function($str){echo $str;}
 $func('hello world');
 ```
 * __invoke()\
 在一个对象作为函数调用时调用\
-```
+```php
 class A{
     __invoke($str){
         echo $str;
@@ -52,7 +52,7 @@ $a('hello world');
 ```
 * __callStatic()\
 在调用一个不存在的静态方法时被调用\
-```
+```php
 class A{
     //__call 在一个对象上调用一个不存在的方法时调用
     __call($method, $arguments){
@@ -73,7 +73,7 @@ class A{
 
 ### 5.5
 * yield\
-```
+```php
 function generator(){
     yield 1;
     yield 2;
@@ -84,14 +84,14 @@ foreach(generator() as $val){
 ```
 * list\
 用于在一次操作中给一组变量赋值\
-```
+```php
 $array = [1,2];
 list($a,$b) = $array;
 ```
 
 ### 5.6
 * 可变参数函数\
-```
+```php
 function sum(...$args){
     $sum = 0;
     $sum = array_reduce($args,function($carry,$item){
@@ -103,28 +103,28 @@ function sum(...$args){
 
 ### 7
 * 新增标量类的参数和返回值的类型声明，如int、string、float、bool\
-```
+```php
 function test(int a):string{
     return "{$a}";
 }
 ```
 * null合并运算符|??\
-```
+```php
 $a??0;  //isset($a)?$a:0;
 $a?:0;  //empty($a)?$a:0;
 ```
 * 太空船操作符|<=>\
 比较左边和右边的表达式，在小于、等于、大于时分别返回-1、0、1
-```
+```php
 $a <=> $b
 ```
 * define定义常量数组
-```
+```php
 defint('ANIMALS',['dog','cat']);
 echo ANIMALS[1];
 ```
 * 匿名类\
-```
+```php
 interface Log{
     public function log(string $msg);
 }
@@ -148,12 +148,12 @@ $a->setLog(new class implements Log{
 })
 ```
 * Unicode codepoint 转义语法\
-```
+```php
 echo "\u{9876}";    //输出汉字：顶
 ```
 * Closure::call()\
 将一个匿名函数绑定到一个对象上闭包并执行\
-```
+```php
 class Test{
     public $name = "gluge";
 }
@@ -161,7 +161,7 @@ $a = function(){
     return $this->name;
 }
 echo $a->call(new Test);    //gluge
-```
+```php
 * 为反序列化unserialize()提供过滤\
 可以反序列化为不完整类\
 ```
@@ -174,30 +174,30 @@ $data_field = get_object_vars($data);   //可以通过这个方法获取不完�
 * 新增IntlChar类\
 用于操作unicode字符\
 * use导入同命名空间下的多个类、方法、常量\
-```
+```php
 use namespace\{class1,class2}
 use function namespace\{method1,method2}
 use const namespace\{const1,const2}
 ```
 * intp()\
 相除取整，返回int\
-```
+```php
 intp(10,3)  //3,int
 float(10,3)   //3,float
 ```
 * random_bytes(int bytes)\
 按字节数生成随机字符串，实际字符串长度为bytes*2\
-```
+```php
 random_bytes(4);    //e62a94a2
 ```
 * random_int(min,max)\
 在区间内生成随机整数\
-```
+```php
 random_int(10,99)   //11
 ```
 * preg_replace_callback_array()\
 使用一个数组进行正则表达式匹配\
-```
+```php
 $subject = 'Aaaaaa Bbb';
  
 preg_replace_callback_array(
@@ -218,7 +218,7 @@ preg_replace_callback_array(
 * session_start([options])\
 session_start 可以接受参数作为配置，覆盖php.ini内的配置\
 * 生成器有返回值，且可以在一个生成器中引入其他生成器\
-```
+```php
 function generator(){
     yield 1;
     yield 2;
@@ -239,7 +239,7 @@ echo $generator_class->getReturn();
 //12123
 ```
 * foreach 不再移动数组指针，且遍历时有更好的迭代性\
-```
+```php
 $arr = [0];
 foreach($arr as &$v){
     $arr[1] = 1;
@@ -251,10 +251,16 @@ foreach($arr as &$v){
 * 数值溢出时返回null\
 * ini文件注释使用;而非#\
 
+### 7.4
+* fn | lambda表达式
+```php
+fn ($x) => $x;
+```
+
 ### 8
 * 联合类型
 方法的参数类型和返回类型可以定义联合类型\
-```
+```php
 function test(int|float num):int|float{
     return num;
 }
@@ -262,7 +268,7 @@ function test(int|float num):int|float{
 * 新增WeakMap
 可以创建对象到值的映射的集合，在对象存在时集合内存在映射，在对象消失时对应映射会消失\
 可以理解为键为弱引用的数组\
-```
+```php
 class Foo{
     public WeakMap $weak;
     public __construc(){
@@ -286,7 +292,7 @@ var_dump(count($cache->cache));     //0
 当传入方法的参数不符合方法的设定时会抛出\
 
 可以用可变参数重写方法\
-```
+```php
 class A{
     public function method(int $many, string $params){
 
@@ -303,7 +309,7 @@ $b->method('zzzz');     //array 0=>zzzz
 
 method():static\
 返回方法所属的类\
-```
+```php
 class A{
     public function method():static{
         return $this;
@@ -312,7 +318,7 @@ class A{
 ```
 * obj::class 返回类型
 等同于get_class($obj)\
-```
+```php
 class Test{
     
 }
@@ -321,7 +327,7 @@ $t = new Test;
 var_dump($t::class);
 ```
 * new、instance 可以用于表达式
-```
+```php
 class Test{}
 
 $names = ['Test'];
@@ -329,7 +335,7 @@ $t = new ($names[0]);
 ```
 * StringAble接口
 实现了__toString()方法的类就会被认为实现了该接口\
-```
+```php
 class Test{
     public function __toString(){
         return 'i am test';
@@ -338,7 +344,7 @@ class Test{
 ```
 * trait 可以定义私有抽象方法
 使用的类需要实现方法\
-```
+```php
 trait myT{
     abstract private function needed():string;
 }
@@ -352,11 +358,11 @@ class Test{
 }
 ```
 * throw 可用于表达式，如??、?:等
-```
+```php
 $a ?? throw new \Exception();
 ```
 * 只捕获异常不存储到变量
-```
+```php
 try{
 
 }catch (\Exception){
@@ -364,14 +370,14 @@ try{
 }
 ```
 * 新增mixed类型定义，等价于array|object|bool|int|float|string|null|callable|resource
-```
+```php
 public function method(mixed ...$data){
 
 }
 ```
 * 注解，就是c#中的特性，可以为类、函数添加元数据
 元数据可以通过反射获取\
-```
+```php
 #[Attribute]
 class myAttribute{
     public array $params = [];
@@ -394,7 +400,7 @@ foreach($attributes as $attribute){
 }
 ```
 * 在需要字段和构造函数时可以简化书写
-```
+```php
 class User{
     public function __construct(public int $age, public string $name){
 
@@ -407,7 +413,7 @@ echo $a->name;
 ```
 * match
 类似于switch\
-```
+```php
 $a = match(1){
     0=>'aa',
     1=>'bb',
@@ -416,7 +422,7 @@ echo $a;    //bb
 ```
 * ?->
 对空安全运算符，在左不为null时按正常->运行，左侧为null直接返回null\
-```
+```php
 class A{
     public function getAddress(){
 
@@ -428,19 +434,27 @@ $phone = $a->getAddress->phone;
 ```
 * 命名参数
 可以以参数名:值的形式传递参数，并且可以跳过默认参数\
-```
+```php
 array_fill(start_index:0, num:100, value: 50);
 ```
-
 * Jit
 优化Opcodes被ZendVm编译为机器语言的过程\
+
+### 8.1
+* enum | 枚举
+```php
+enum enumName{
+    case Fruits = 'fruits';
+    case People = 'people';
+}
+```
 
 
 ## 数组函数
 * array_reduce(array,func,mixed)
 用回调函数将数组归一化为单一的值\
 mixed表示在第一个数组处理前，数组的初始值\
-```
+```php
 $arr = ['aaa','bbb','ccc'];
 $res = array_reduce($arr, function($carry,$item){
     return $carry.$item;
@@ -497,7 +511,7 @@ var_dump($res());
 返回当前元素键和值构建的数组，指向下个元素\
 * extract(array)
 把键作为变量名，把值分别赋值给键名形成的变量\
-```
+```php
 $a = "Original";
 $my_array = array("a" => "Cat","b" => "Dog", "c" => "Horse");
 extract($my_array);
@@ -523,7 +537,7 @@ echo "\$a = $a; \$b = $b; \$c = $c";
 将多个元素放入数组最前\
 * array_walk(array,function,arg)
 使用function遍历数组元素，arg可选\
-```
+```php
 function(&$value, $key, $arg){    //如果需要通过这个改变元素值，给value加引用传递
     $value = 'new value';
 }
@@ -538,7 +552,7 @@ function(&$value, $key, $arg){    //如果需要通过这个改变元素值，�
 从大到小排序，按0重排键名\
 * usort(array, function)
 按自定义函数排序，按0重排键名\
-```
+```php
 $arr = (4,2,8,6);
 usort($arr, function($a, $b){
     if($a==$b){
@@ -641,7 +655,7 @@ length为0时可以用作插入\
 ## 回调函数
 * call_user_func
 通过间接方式调用函数的方法\
-```
+```php
 $a = call_user_func(function($arg){
     return "ss";
 }, $arg1)
@@ -667,7 +681,7 @@ $a = call_user_func(["Test","sm"], $arg);
 ```
 * call_user_func_array
 与call_user_func类似，唯一区别只有参数需要用数组\
-```
+```php
 class Test{
     public function method($arg){
         return "ss";
@@ -684,11 +698,11 @@ $a = call_user_func_arrry(["Test","sm"], [$arg]);
 
 ## '|"
 单引号效率更高\
-从Opcodes编译而言，双引号会将变量存储在临时变量中，然后将字符串写入，再用变量替换字符串，而单引号没有这个过程，因此单引号效率更高\
+从Opcodes编译而言，双引号会将变量存储在临时变量中，然后将字符串写入，再用变量替换字符串，而单引号没有这个过程，因此单引号效率更高
 
 ## for|foreach
 foreach效率更高\
-从语言结构而言，foreach是指针下移的过程，而for需要每次比较i值的大小\
+从语言结构而言，foreach是指针下移的过程，而for需要每次比较i值的大小
 
 ## 魔术方法
 * __construct()
@@ -697,7 +711,7 @@ foreach效率更高\
 析构函数，在实例被销毁时调用\
 * __clone()
 在实例被clone时调用\
-```
+```php
 $a = new Test();
 clone($a);
 ```
@@ -706,7 +720,7 @@ clone($a);
 与C#不同的是php基类没有实现toString\
 * __invoke()
 当对象被当成函数使用时自动调用\
-```
+```php
 class Test(){
     public function __invoke(){
         echo "我被当成函数使用了";
@@ -723,7 +737,7 @@ $a();
 * __get(string fieldName)
 访问对象protect或private字段时自动调用\
 类似C#的属性的get，但针对所有目标字段\
-```
+```php
 class Test{
     private $name;
     private $age;
@@ -756,7 +770,7 @@ echo $a->name;  //zz
 * __sleep()
 对对象进行序列化时自动调用，在序列化前执行，返回需要序列化的字段名称的数组\
 类似于C#实现ISerializabe接口的GetObjectData方法\
-```
+```php
 class Test(){
     public $name;
     public $age;
@@ -774,7 +788,7 @@ class Test(){
 * __autoload()
 尝试加载未定义的类\
 定义__autoload后，如果php执行过程中发现未定义的类，就会自动执行__autoload尝试加载\
-```
+```php
 function  __autoload($className) {
     $filePath = "project/class/{$className}.php";
     if (is_readable($filePath)) {
@@ -795,7 +809,7 @@ if (条件A) {
 当对对象执行var_dump时自动调用\
 * __set_state(array fields)
 当对对象使用var_export方法时自动调用，返回一个类的实例\
-```
+```php
 class Test(){
     public $name;
 
@@ -853,41 +867,15 @@ app\trait\MyTrait
 
 
 
-# Laravel
-
-## 生命周期
-* composer加载依赖项
-* 创建应用实例
-创建容器\
-绑定内核，包括http内核（处理正常请求）、Console内核（处理artisan、计划任务、队列等）、异常处理\
-* 接受请求并响应
-解析http内核\
-处理http请求，将请求参数创建一个request实例传入http内核的handle方法，具体是将request实例注册到app容器，清除原request实例缓存，启动引导程序（检查环境、加载配置、配置日志、注册异常处理handler、注册facades、注册并启动providers），将请求发送到路由\
-发送响应\
-* 终止应用程序
-调用中间件处理session等内容\
-调用terminate方法\
-
-## 服务容器
-执行依赖注入的工具\
-
-## 事件
-在laravel中触发活动时会自动触发\
-
-## 中间件的实现原理
-使用array_reduce返回中间件执行的嵌套闭包\
-由于array_reduce返回的闭包的最外层是传入array的最后一个元素，而最外层闭包又是最先执行的，因此先通过array_reverse将中间件数组倒序，以获得正序执行的嵌套闭包\
-
-## 渲染引擎
-blade模板引擎\
-
-
-
 # 依赖注入
+> **依赖注入**
+> 把有依赖关系的类放到容器中，解析出的实例注入类中，这个过程就是依赖注入
+> 
+可以方便的切换注入的内容
 
 ## 构造函数注入
-从构造器注入\
-```
+从构造器注入
+```php
 class test{
 
     private $class;
@@ -899,8 +887,8 @@ class test{
 ```
 
 ## setter注入
-编写特定的set方法注入\
-```
+编写特定的set方法注入
+```php
 class test{
 
     private $class;
@@ -913,14 +901,24 @@ class test{
 
 ## 接口注入
 类实现接口，接口中某方法参数就是需要注入的内容\
-由于实现接口功能反而需要类中扩展很多代码，因此不建议使用\
+由于实现接口功能反而需要类中扩展很多代码，因此不建议使用
+
+
+
+# PHP 接口版本控制
+> 待施工
+
+
+
+# PHP 慢sql查询
+> 待施工
 
 
 
 # PHP RPC的实现
 
 ## 原生实现
-```
+```php
 $rpc_server = stream_socket_server("tcp://127.0.0.1:6661",$err_no,$err_msg);
 if(!$rpc_server){
     echo "代码异常：".$err_no.",信息异常：".$err_msg;
@@ -960,7 +958,7 @@ while(true){
 
 ## Hprose
 可以实现RPC传输的包\
-```
+```php
 <?php
 require 'vendor/autoload.php';
 
@@ -977,7 +975,7 @@ $server = new HttpServer();
 $service->bind($server);
 $server->listen();
 ```
-```
+```php
 <?php
 require 'vendor/autoload.php';
 
@@ -1024,7 +1022,7 @@ session存储的内容无大小限制，但一般只能短时间内存储\
 xxx.yyy.zzz格式\
 * Header
 一般包含alg加密算法和typ令牌类型两部分，然后将这个json用base64转换为字符串\
-```
+```json
 {
     "alg":"HS256",
     "typ":"JWT"
@@ -1032,7 +1030,7 @@ xxx.yyy.zzz格式\
 ```
 * Payload
 载体部分，默认有包括iss(发行人)、sub(主题)、aud(用户)、exp(过期时间)、nbf(生效时间)、iat(签发时间)、jti(JWTid)，也可以存储自定义字段，比如ip、机器码等，将这个json用base64转为字符串保存\
-```
+```json
 {
     "sub":"我就是GUNDAM",
     "aud":1,
@@ -1054,6 +1052,255 @@ JWT签发后无法改变JWT的权限，签发后在有效期内始终保持有�
 JWT续签只能签发新的JWT\
 * 缺点解决方案
 引入Redis进行JWT控制\
+
+
+
+# Laravel
+
+## ENV
+一般用于存储因环境不同而改变的配置信息\
+在生命周期启动时加载到$_ENV中
+* env(envName, defaultValue)
+```php
+env('app_debug', false);
+```
+
+## config
+用于存储固定配置，一般搭配env使用\
+* config(fileName.configName, defaultValue)
+返回config值
+```php
+config('app.timezone', 'Asia/Shanghai');
+```
+* config([fileName.configName => setValue])
+设置config值
+```php
+config(['app.timezone' => 'Asiz/Shanghai']);
+```
+* artisan config cache
+可以将config配置合并成一个缓存文件，可以提应用速度
+
+## 目录结构
+1. app | 应用的核心代码，代码由composer自动加载
+   1. Broadcasting | 广播，通过make:channel生成
+   2. Console | artisan命令，通过make:command生成
+   3. Events | 事件，类似于观察者，event:generate、make:event生成
+   4. Exceptions | 异常处理，可通过修改Handler类自定义异常呈现方式
+   5. Http | 应用逻辑
+   6. Jobs | 队列，通过make:job生成
+   7. Listeners | 处理event类，通过event:generaate、make:listener生成
+   8. Mail | 电子邮件，通过make:mail生成
+   9.  Models | Eloquent orm模型类
+   10. Notifications | 消息通知，通过make:notification生成
+   11. Policies | 授权策略，通过make:pollicy生成
+   12. Providers | 服务提供者，引导应用程序处理请求
+   13. Rules | 验证规则，通过make:rule生成
+2.  bootstrap | 启动框架的app.php文件
+    1.  cache | 用于优化框架性能的核心缓存文件
+3.  config | 配置文件
+4.  database | 数据库相关文件
+    1.  factories | 模型工厂
+    2.  migrations | 数据库迁移文件
+    3.  seeders | 种子生成文件
+5.  lang | 语言文件
+6.  public | 包含index.php，是所有进入应用的请求的入口文件，还包含其他被公共访问的资源文件
+7.  resources | 包含views及未编译的资源文件
+8.  routes | 路由定义文件
+    1.  web.php | 提供csrf保护及cookie加密，一般用于http会话
+    2.  api.php | 旨在存放需要通过令牌验证身份的接口路由
+    3.  console.php | 定义控制台命令
+    4.  channels | 注册事件广播
+9.  storage | 存储其他缓存
+    1.  app | 存储应用生成的任何文件
+    2.  framework | 存储框架缓存
+    3.  logs | 日志文件
+10. tests | 单元测试
+11. vendor | composer依赖项
+
+## 生命周期
+> 简单归纳
+> 创建应用实例$\rightarrow$绑定内核$\rightarrow$注册服务提供者$\rightarrow$传递请求至引导程序
+1. 从web服务器应用定向到index.php入口文件
+2. composer加载所有依赖项
+3. laravel应用|服务容器实例创建
+4. 绑定Http或Console内核，后续步骤以Http内核为例
+5. Http内核基础Kernel（翻译为内核）类，定义了一系列处理请求前应先运行的bootstrappers数组，这些都是引导程序，配置异常处理、日志、应用环境检测等任务
+6. 注册服务提供者，在config/app.php中定义，调用register方法，再调用boot方法，提供了如数据库、队列、验证、路由等组件
+7. 将请求发送至路由组件解析，Http中间件处理请求
+8. 路由或控制器返回的响应由Http中间件的handle方法返回
+9. 通过send方法将响应发送
+
+## 服务容器
+依赖注入提供了一种便利的改变依赖项的方式，服务容器则是用以执行依赖注入的工具\
+可以理解为，laravel应用都是在服务容器中执行的，当需要依赖注入时，会在注入前经过服务容器的调节，达到自动注入或变更注入项的功能
+
+> **核心概念 - 绑定**
+> 服务容器的核心概念是绑定，通过将需要注入的项绑定到容器，可以在未来需要注入时由服务容器自动注入或手动解析
+>
+
+### 绑定到服务容器
+一般在服务提供者的register方法中定义
+* bind
+最普通的绑定方式，注入时提供一个类实例的闭包
+```php
+$this->app->bind(ClassName, fn($app) => new ClassName());
+```
+* singleton
+单例绑定，单次进程中保证存活
+```php
+$this->app->singleton(ClassName, fn($app) => new ClassName());
+```
+* scoped
+单例绑定，在开始新生命周期时刷新
+```php
+$this->app->scoped(ClassName, fn($app) => new ClassName());
+```
+* 接口绑定
+绑定接口实现，可以给一个接口绑定对应的注入类
+```php
+$this->app->bind(InterfaceName, ClassName);
+```
+```php
+class Test{
+    //此时ClassName会被注入
+    public function __contruct(InterfaceName $class){
+        
+    }
+}
+```
+* 上下文绑定
+当不同的类绑定同一个接口注入时，可以通过此绑定不同的注入实例
+```php
+$this->app->when([ClassName1])
+          ->needs(NeedInterfaceName)
+          ->give(function(){
+            return new NeedClassName1();
+          });
+$this->app->when([ClassName2])
+          ->needs(NeedInterfaceName)
+          ->give(function(){
+            return new NeedClassName2();
+          });
+```
+* 原语绑定
+在需要注入参数时使用
+```php
+$this->app->when([ClassName1])
+          ->needs('$ArgName')
+          ->give(Value);
+$this->app->when([ClassName1])
+          ->needs('$ArgName')
+          ->giveTagged(TagName);
+$this->app->when([ClassName1])
+          ->needs('$ArgName')
+          ->giveConfig(FileName.ConfigName);
+```
+* 变长参数绑定
+```php
+$this->app->when([ClassName])
+          ->needs(NeedInterfaceName)
+          ->give(fn ($app) => [
+            $app->make(NeedClassName1),     //注册时解析
+            NeedClassName2      //注册时不解析
+          ]);
+```
+* 标签
+将已经绑定的类别归纳为一个组
+```php
+$this->app->tag([BindedClass1,...], TagName);
+$this->app->when([ClassName])
+          ->needs(NeedInterfaceName)
+          ->giveTagged(TagName);
+```
+* 继承绑定
+使用子类的实例更改已经绑定的父类实例\
+```php
+$this->app->extend(ClassName, fn ($app) => new ChildClassName);
+```
+
+### 解析绑定的内容
+* make
+```php
+$this->app->make(ClassName);
+```
+* makeWith
+传入参数的解析
+```php
+$this->app->makeWith(ClassName, ['arg1' => value1...]);
+```
+
+### 实例的方法调用
+可以解析并调用实例的方法
+```php
+App::call([new ClassName(), MethodName]);
+```
+
+### 容器事件
+* resolving
+每次解析实例都会调用一个相应的事件，可以通过此方法开始监听
+```php
+//解析任何对象时都会调用
+$this->app->resolving(function($object, $app){
+
+});
+//解析特定类型对象时调用
+$this->app->resolving(ClassName, function($className, $app){
+
+})
+```
+
+## Provider | 服务提供者
+为laravel提供服务\
+简单来说就是在provider中注册了需要的服务\
+
+### 创建Provider
+```sh
+php artisan make:provider ProviderName
+```
+实际创建了文件并将其注册到app.providers配置中
+
+### 配置Provider
+```php
+class MyProvider extends ServiceProvider implements DeferrableProvider{
+
+    $binds = [
+
+    ];
+
+    $singletons = [
+
+    ];
+
+    public function register(){
+
+    }
+
+    public function boot(){
+
+    }
+}
+```
+* register
+provider加载时执行的方法，一般只在此注册提供的服务，因为有可能无法访问到其它服务提供者
+* boot
+所有provider加载完毕后执行的方法，可以访问其它provider提供的服务
+* $bindings
+需要绑定的服务数组
+* $singletons
+需要绑定的单例数组
+* DeferrableProvider
+惰性加载的Provider，只有当需要访问Provider中提供的服务时才加载
+
+## Facades
+提供了一种模拟静态方法访问实例方法的方式，将实例模拟成帮助类\
+实际是通过__callStatic方法提供相关方法的访问\
+
+## 中间件的实现原理
+使用array_reduce返回中间件执行的嵌套闭包\
+由于array_reduce返回的闭包的最外层是传入array的最后一个元素，而最外层闭包又是最先执行的，因此先通过array_reverse将中间件数组倒序，以获得正序执行的嵌套闭包\
+
+## 渲染引擎
+blade模板引擎\
 
 
 
