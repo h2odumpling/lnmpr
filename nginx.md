@@ -1,6 +1,6 @@
 # 正向代理
-一般用于梯子\
-```
+一般用于梯子
+```nginx
 location /{
     proxy_pass $scheme://$host$request_uri;
     //解决url带.导致的nginx503问题
@@ -16,7 +16,7 @@ location /{
 
 # 反向代理
 一般用于负载均衡，隐藏服务器
-```
+```nginx
 upstream stream_name{
     //通过hash算法使统一的ip由统一的服务器接受，用于保持session一致
     ip_hash;
@@ -35,8 +35,8 @@ server{
 
 # location
 * rewrite regx replace;
-使用正则匹配重写路由，将匹配到的部分重写为替换部分，可以进行部分替换\
-```
+使用正则匹配重写路由，将匹配到的部分重写为替换部分，可以进行部分替换
+```nginx
 location /admin {
     if (!-e $request_filename) {
         #rewrite  ^/admin$ /admin/;
@@ -47,15 +47,15 @@ location /admin {
 ```
 
 ## php文件的配置
-使用此配置，一般php通过PATH_INFO获取路由所需参数，而使用rewrite一般则是通过get参数的形式进行传递\
-```
+使用此配置，一般php通过PATH_INFO获取路由所需参数，而使用rewrite一般则是通过get参数的形式进行传递
+```nginx
 location ~ [^/]\.php(/|$) {
     fastcgi_pass   php73:9000;
     include        fastcgi_params;
     include        fastcgi-php.conf;
 }
 ```
-```
+```nginx
 # regex to split $uri to $fastcgi_script_name and $fastcgi_path
 # 相当于把uri分成两个变量，一个是访问的php名称，一个是后面剩余的链接（一般被用作参数，给PATH_INFO赋值）
 fastcgi_split_path_info ^((?U).+\.php)(/.+)$;
