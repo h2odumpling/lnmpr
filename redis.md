@@ -124,3 +124,25 @@ RDB文件以二进制存储，比AOF文件小\
 RDB是快照形式，比AOF恢复更快\
 AOF执行损耗性能更小，单次只保存该次的数据，RDB每次执行都会重写备份一次数据库，在数据库大时性能很差\
 AOF的可靠性更高，RDB会损失最后一次快照之后的所有数据，AOF只损失AOF缓冲区还没有同步到硬盘的数据
+
+
+
+# 危险命令
+redis危险命令就是权限过大或操作数据量过大的命令
+* keys
+  查询所有的键
+* flushdb
+  清空当前数据库记录
+* flushall
+  清空redis全部记录
+* config
+  修改redis配置
+
+## 解决方法
+在redis中配置rename-command选项对命令进行重命名或禁用
+```conf
+rename-command KEYS ""
+rename-command FLUSHDB ""
+rename-command FLUSHALL ""
+rename-command CONFIG ""
+```
