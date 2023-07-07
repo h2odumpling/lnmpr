@@ -1302,6 +1302,9 @@ provider加载时执行的方法，一般只在此注册提供的服务，因为
 提供了一种模拟静态方法访问实例方法的方式，将实例模拟成帮助类\
 实际是通过__callStatic方法提供相关方法的访问
 
+## Constract
+实现laravel功能的接口类，这些类是Facade的基础，实际使用Facade或Constract没有太大的区别
+
 ## laravel中间件
 只用于Http内核的中间件，在Http的Kernel.php文件中注册
 * 全局中间件
@@ -1317,6 +1320,127 @@ provider加载时执行的方法，一般只在此注册提供的服务，因为
 
 ## 渲染引擎
 blade模板引擎
+
+## 事件和监听器
+基于观察者模式的实现\
+使用c#的事件来理解的话，事件Event是触发器，监听器listener是用以执行的function
+* 一个事件可以绑定多个listener
+```php
+//在EventProvider中定义
+protected $listen = [
+    EvnetClass::Class => [
+        ListenerClass::Class
+    ],
+];
+```
+* 一个监听器可以通过通配符被多个事件复数绑定
+```php
+Event::listen('eventPartName*', [ListenerClass::class, 'handle']);
+```
+
+### 定义事件和监听器
+* 定义事件
+```php
+class MyEvent{
+    public $order;
+    public function __construct(Order $order){
+        $this->order = $order;
+    }
+}
+```
+* 定义监听器\
+监听器是通过事件的实例来获取所需数据的
+```php
+class MyListener{
+    public function handle(MyEvent $event){
+        //通过event获取数据
+        $event->order;
+    }
+}
+```
+监听器可以实现ShouldQueue接口在队列中执行
+```php
+class MyListener implements ShouldQueue{
+    public $connection = "connectionName";
+    public $queue = "queueName";
+    public $delay = 60;     //delaySecends
+    public function viaConnection(){    //同$connection
+        return "connectionName";
+    }
+    public function viaQueue{   //同$queue
+        return "queueName";
+    }
+    public function shouldQueue(MyEvent $event){    //返回false会阻止这个监听器的执行
+        return false;   
+    }
+    public function failed(MyEvent $event, $exception){     //在监听器handle方法处理失败时调用
+
+    }
+    public $tries = 5;    //队列重试次数
+    public function retryUntil(){   //设置队列重试截止时间
+        return now()->addMinutes(5);
+    }
+}
+```
+
+## 队列
+laravel队列实际是任务的序列化反序列化类的过程\
+laravel队列既是消息发布者，也是消费者
+
+## 定义任务
+```php
+class MyJob implements ShouldQueue{
+
+    public $tries = 5;      //队列重试次数
+
+    public function __construct(){
+        $this->onConnection("ConnectionName")   //定义连接名称
+            ->onQueue("QueueName");     //定义推送到队列的名称
+    }
+
+    public function handle(){
+        $this->release();   //将任务推回队列
+    }
+
+    public function failed(Throwable $exception){   //捕获错误
+        
+    }
+}
+```
+
+### 任务链
+可以通过Bus的Facade中提供的chain方法定义一个任务链
+```php
+Bus::chain([
+    new JobClass1,
+    new JobClass2,
+    new JobClass3
+])
+    ->catch(function(Throwable $e){     //捕获任务链失败
+
+    })
+    ->dispatch();
+```
+
+### artisan相关命令
+* artisan queue:work
+  启动队列处理所有队列任务，程序状态（代码）会被缓存，修改代码后需要重启队列才能生效
+  * --queue=queueName1,queueName2
+    仅处理指定队列，且有优先级顺序，会先处理完前者再处理后者
+  * --sleep=3
+    在队列为空时沉睡指定时间
+  * --timeout=60
+    在队列处理超过一定时间后退出队列，队列可以由任务监管程序（如pm2、supervisor）自动重启，可以防止错误导致的队列堵塞
+* artisan queue:listen
+  启动队列处理所有队列任务，程序状态（代码）不会被缓存，在修改代码后不需要重启队列，但执行效率低于work，由于代码读取较慢
+* artisan queue:retry
+  重试失败队列任务
+  * all
+    重试所有失败任务
+* artisan queue:flush
+  删除所有失败的队列任务
+* artisan queue:clear
+  删除所有队列任务
 
 
 
