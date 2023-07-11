@@ -558,7 +558,12 @@ default_authentication_plugin=mysql_native_password
 3. 登陆mysql修改用户登陆验证方式
 ```sh
 use mysql;
-ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password';
+FLUSH PRIVILEGES;   //刷新权限
+```
+4. 扩大权限范围
+```sh
+ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'password';
 FLUSH PRIVILEGES;   //刷新权限
 ```
 
