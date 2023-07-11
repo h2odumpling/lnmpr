@@ -545,6 +545,25 @@ and高于or，在没有括号的情况下，and先执行
 
 
 
+# 常见问题
+
+## mysql8身份验证插件导致的登陆失败
+mysql8默认的身份认证插件是caching_sha2_password，之前的是mysql_native_password\
+* 解决方法：
+1. 修改my.conf中mysqld中
+```conf
+default_authentication_plugin=mysql_native_password
+```
+2. 重启mysql
+3. 登陆mysql修改用户登陆验证方式
+```sh
+use mysql;
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';
+FLUSH PRIVILEGES;   //刷新权限
+```
+
+
+
 # 外置应用索引
 相当于用其他应用对mysql建立额外的索引\
 优势：
